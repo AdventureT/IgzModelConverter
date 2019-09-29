@@ -1,7 +1,7 @@
 # IgzModelConverter
 Converts Igz Model Files from the Alchemy Engine to Fbx. Supports Crash Bandicoot™ N. Sane Trilogy, Ctr™ Nitro-Fueled, Skylanders Imaginators.
 
-## Combatible Games
+## Compatible Games
 | Games                            |  |
 |----------------------------------|--|
 | Crash Bandicoot™ N. Sane Trilogy | <span style="color:green">✓</span> |
