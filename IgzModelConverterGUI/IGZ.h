@@ -35,8 +35,8 @@ namespace IGZ
 	private:
 		FILE* f;
 		long igzVersion = 0;
-		long* dataOffset = new long[5];
-		long* dataCount = new long[5];
+		long* dataOffset = new long[4];
+		long* dataCount = new long[4];
 		long long subDataOffset = 0;
 		long meshDataOffset = 0;
 		long long boneDataOffset = 0;
