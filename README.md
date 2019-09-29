@@ -4,9 +4,9 @@ Converts Igz Model Files from the Alchemy Engine to Fbx. Supports Crash Bandicoo
 ## Compatible Games
 | Games                            |  |
 |----------------------------------|--|
-| Crash Bandicoot™ N. Sane Trilogy | <span style="color:green">✓</span> |
-| Ctr™ Nitro-Fueled                | <span style="color:green">✓</span> |
-| Skylanders Imaginators           | <span style="color:green">✓</span> |
+| Crash Bandicoot™ N. Sane Trilogy | :heavy_check_mark: |
+| Ctr™ Nitro-Fueled                | :heavy_check_mark: |
+| Skylanders Imaginators           | :heavy_check_mark: |
 
 ## Tutorial
 1. Choose your game folder path 
