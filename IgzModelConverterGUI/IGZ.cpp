@@ -697,10 +697,9 @@ namespace IGZ {
 				normalX = ReadFloat(f);
 				normalY = ReadFloat(f);
 				normalZ = ReadFloat(f);
-				fseek(f, 4, SEEK_CUR);
 				uvU = ReadHalfFloat(f);
 				uvV = ReadHalfFloat(f);
-				fseek(f, 8, SEEK_CUR);
+				fseek(f, 12, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
 				vertices.push_back(vertexY * fscale);
