@@ -1,10 +1,9 @@
-﻿#pragma once
+#pragma once
 #include "MathHelper.h"
 #include "IGZ.h"
 
 namespace IgzModelConverterGUI 
 {
-
 	using namespace System;
 	using namespace System::ComponentModel;
 	using namespace System::Collections;
@@ -14,12 +13,10 @@ namespace IgzModelConverterGUI
 	using namespace System::Runtime::InteropServices;
 	using namespace System::Collections;
 	using namespace System::Collections::Generic;
-
 	using namespace System::IO;
-	namespace fs = std::experimental::filesystem;
 	using namespace msclr::interop;
 
-
+	//Some unused Skeleton stuff from the hka's
 	struct BoneInfo
 	{
 		FbxNode* m_pNode;
@@ -162,7 +159,8 @@ namespace IgzModelConverterGUI
 
 		return pScene->GetRootNode();
 	}
-
+	//Wanted to make a file which holds the paths of each game. This would be more easier than selecting each time you start the program the game paths manual.
+	//Might add this to the todo list...
 	void WritePathFile(char* nstGamePath, char* ctrGamePath, char* skyGamePath)
 	{
 		FILE* f;
@@ -188,28 +186,33 @@ namespace IgzModelConverterGUI
 	{
 
 			int _game = 0;
-	private: System::Windows::Forms::Button^  button2;
+
 			 int _type = 0;
 			 bool _fileChosen = false;
-	private: System::Windows::Forms::RadioButton^  radioButton1;
-	private: System::Windows::Forms::RadioButton^  sky;
+	private: System::Windows::Forms::RadioButton^ skyl;
+
+
 	private: System::Windows::Forms::ProgressBar^ progressBar1;
 			 char* _filename = new char[256];
 			 char* _filenamehkx = new char[256];
 
 			 char* _path = new char[256];
-	private: System::Windows::Forms::Button^ button3;
-	private: System::Windows::Forms::Button^ button4;
+	private: System::Windows::Forms::Button^ openFolder;
+
+
 	private: System::Windows::Forms::OpenFileDialog^ openFileDialog2;
 	private: System::Windows::Forms::TreeView^ treeView1;
-	private: System::Windows::Forms::Button^ button5;
+	private: System::Windows::Forms::Button^ gameFolder;
+
 	private: System::Windows::Forms::FolderBrowserDialog^ folderBrowserDialog1;
-			 
+			bool busy = false;
 			 int _files = 0;
-			 //char* nstGamePath;
+	private: System::Windows::Forms::Button^ convert;
+		   //char* nstGamePath;
 			 //char* ctrGamePath;
-	private: System::Windows::Forms::CheckBox^ checkBox1;
-			 //char* skyGamePath;
+
+
+		   //char* skyGamePath;
 			 bool _bones = false;
 
 	public:
@@ -255,23 +258,11 @@ namespace IgzModelConverterGUI
 				delete components;
 			}
 		}
-	private: System::Windows::Forms::Button^  button1;
+
 	private: System::Windows::Forms::OpenFileDialog^  openFileDialog1;
-	private: System::Windows::Forms::RadioButton^  ActorButton;
-	private: System::Windows::Forms::RadioButton^  ModelButton;
-
-
 	private: System::Windows::Forms::RadioButton^  NSTButton;
 	private: System::Windows::Forms::RadioButton^  CTRButton;
-
-
 	private: System::Windows::Forms::Panel^  panel1;
-	private: System::Windows::Forms::Panel^  panel2;
-
-
-
-	protected:
-
 	private:
 		/// <summary>
 		/// Required designer variable.
@@ -286,73 +277,24 @@ namespace IgzModelConverterGUI
 		void InitializeComponent(void)
 		{
 			System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(MyForm::typeid));
-			this->button1 = (gcnew System::Windows::Forms::Button());
 			this->openFileDialog1 = (gcnew System::Windows::Forms::OpenFileDialog());
-			this->ActorButton = (gcnew System::Windows::Forms::RadioButton());
-			this->ModelButton = (gcnew System::Windows::Forms::RadioButton());
 			this->NSTButton = (gcnew System::Windows::Forms::RadioButton());
 			this->CTRButton = (gcnew System::Windows::Forms::RadioButton());
 			this->panel1 = (gcnew System::Windows::Forms::Panel());
-			this->radioButton1 = (gcnew System::Windows::Forms::RadioButton());
-			this->panel2 = (gcnew System::Windows::Forms::Panel());
-			this->sky = (gcnew System::Windows::Forms::RadioButton());
-			this->button2 = (gcnew System::Windows::Forms::Button());
+			this->skyl = (gcnew System::Windows::Forms::RadioButton());
 			this->progressBar1 = (gcnew System::Windows::Forms::ProgressBar());
-			this->button3 = (gcnew System::Windows::Forms::Button());
-			this->button4 = (gcnew System::Windows::Forms::Button());
+			this->openFolder = (gcnew System::Windows::Forms::Button());
 			this->openFileDialog2 = (gcnew System::Windows::Forms::OpenFileDialog());
 			this->treeView1 = (gcnew System::Windows::Forms::TreeView());
-			this->button5 = (gcnew System::Windows::Forms::Button());
+			this->gameFolder = (gcnew System::Windows::Forms::Button());
 			this->folderBrowserDialog1 = (gcnew System::Windows::Forms::FolderBrowserDialog());
-			this->checkBox1 = (gcnew System::Windows::Forms::CheckBox());
+			this->convert = (gcnew System::Windows::Forms::Button());
 			this->panel1->SuspendLayout();
-			this->panel2->SuspendLayout();
 			this->SuspendLayout();
-			// 
-			// button1
-			// 
-			this->button1->Enabled = false;
-			this->button1->Location = System::Drawing::Point(655, 9);
-			this->button1->Name = L"button1";
-			this->button1->Size = System::Drawing::Size(156, 23);
-			this->button1->TabIndex = 0;
-			this->button1->Text = L"Choose your Igz File Model";
-			this->button1->UseVisualStyleBackColor = true;
-			this->button1->Visible = false;
-			this->button1->Click += gcnew System::EventHandler(this, &MyForm::button1_Click);
 			// 
 			// openFileDialog1
 			// 
 			this->openFileDialog1->FileName = L"openFileDialog1";
-			// 
-			// ActorButton
-			// 
-			this->ActorButton->AutoSize = true;
-			this->ActorButton->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->ActorButton->ForeColor = System::Drawing::SystemColors::ControlText;
-			this->ActorButton->Location = System::Drawing::Point(3, 3);
-			this->ActorButton->Name = L"ActorButton";
-			this->ActorButton->Size = System::Drawing::Size(55, 17);
-			this->ActorButton->TabIndex = 1;
-			this->ActorButton->TabStop = true;
-			this->ActorButton->Text = L"Actor";
-			this->ActorButton->UseVisualStyleBackColor = true;
-			this->ActorButton->CheckedChanged += gcnew System::EventHandler(this, &MyForm::ActorButton_CheckedChanged);
-			// 
-			// ModelButton
-			// 
-			this->ModelButton->AutoSize = true;
-			this->ModelButton->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->ModelButton->Location = System::Drawing::Point(59, 3);
-			this->ModelButton->Name = L"ModelButton";
-			this->ModelButton->Size = System::Drawing::Size(59, 17);
-			this->ModelButton->TabIndex = 2;
-			this->ModelButton->TabStop = true;
-			this->ModelButton->Text = L"Model";
-			this->ModelButton->UseVisualStyleBackColor = true;
-			this->ModelButton->CheckedChanged += gcnew System::EventHandler(this, &MyForm::ModelButton_CheckedChanged);
 			// 
 			// NSTButton
 			// 
@@ -385,7 +327,7 @@ namespace IgzModelConverterGUI
 			// panel1
 			// 
 			this->panel1->BackColor = System::Drawing::Color::Transparent;
-			this->panel1->Controls->Add(this->radioButton1);
+			this->panel1->Controls->Add(this->skyl);
 			this->panel1->Controls->Add(this->NSTButton);
 			this->panel1->Controls->Add(this->CTRButton);
 			this->panel1->Location = System::Drawing::Point(15, 27);
@@ -393,57 +335,19 @@ namespace IgzModelConverterGUI
 			this->panel1->Size = System::Drawing::Size(205, 26);
 			this->panel1->TabIndex = 5;
 			// 
-			// radioButton1
+			// skyl
 			// 
-			this->radioButton1->AutoSize = true;
-			this->radioButton1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+			this->skyl->AutoSize = true;
+			this->skyl->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->radioButton1->Location = System::Drawing::Point(112, 3);
-			this->radioButton1->Name = L"radioButton1";
-			this->radioButton1->Size = System::Drawing::Size(91, 17);
-			this->radioButton1->TabIndex = 5;
-			this->radioButton1->TabStop = true;
-			this->radioButton1->Text = L"SkyLanders";
-			this->radioButton1->UseVisualStyleBackColor = true;
-			this->radioButton1->CheckedChanged += gcnew System::EventHandler(this, &MyForm::radioButton1_CheckedChanged);
-			// 
-			// panel2
-			// 
-			this->panel2->BackColor = System::Drawing::Color::Transparent;
-			this->panel2->Controls->Add(this->sky);
-			this->panel2->Controls->Add(this->ActorButton);
-			this->panel2->Controls->Add(this->ModelButton);
-			this->panel2->Location = System::Drawing::Point(606, 99);
-			this->panel2->Name = L"panel2";
-			this->panel2->Size = System::Drawing::Size(205, 26);
-			this->panel2->TabIndex = 6;
-			this->panel2->Visible = false;
-			// 
-			// sky
-			// 
-			this->sky->AutoSize = true;
-			this->sky->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->sky->Location = System::Drawing::Point(124, 3);
-			this->sky->Name = L"sky";
-			this->sky->Size = System::Drawing::Size(46, 17);
-			this->sky->TabIndex = 3;
-			this->sky->TabStop = true;
-			this->sky->Text = L"Sky";
-			this->sky->UseVisualStyleBackColor = true;
-			this->sky->CheckedChanged += gcnew System::EventHandler(this, &MyForm::sky_CheckedChanged);
-			// 
-			// button2
-			// 
-			this->button2->Enabled = false;
-			this->button2->Location = System::Drawing::Point(684, 41);
-			this->button2->Name = L"button2";
-			this->button2->Size = System::Drawing::Size(75, 23);
-			this->button2->TabIndex = 3;
-			this->button2->Text = L"Convert!";
-			this->button2->UseVisualStyleBackColor = true;
-			this->button2->Visible = false;
-			this->button2->Click += gcnew System::EventHandler(this, &MyForm::button2_Click);
+			this->skyl->Location = System::Drawing::Point(112, 3);
+			this->skyl->Name = L"skyl";
+			this->skyl->Size = System::Drawing::Size(91, 17);
+			this->skyl->TabIndex = 5;
+			this->skyl->TabStop = true;
+			this->skyl->Text = L"SkyLanders";
+			this->skyl->UseVisualStyleBackColor = true;
+			this->skyl->CheckedChanged += gcnew System::EventHandler(this, &MyForm::skylRadioButton_CheckedChanged);
 			// 
 			// progressBar1
 			// 
@@ -452,26 +356,15 @@ namespace IgzModelConverterGUI
 			this->progressBar1->Size = System::Drawing::Size(799, 26);
 			this->progressBar1->TabIndex = 7;
 			// 
-			// button3
+			// openFolder
 			// 
-			this->button3->Location = System::Drawing::Point(329, 192);
-			this->button3->Name = L"button3";
-			this->button3->Size = System::Drawing::Size(113, 23);
-			this->button3->TabIndex = 8;
-			this->button3->Text = L"Open in Explorer";
-			this->button3->UseVisualStyleBackColor = true;
-			this->button3->Click += gcnew System::EventHandler(this, &MyForm::Button3_Click);
-			// 
-			// button4
-			// 
-			this->button4->Enabled = false;
-			this->button4->Location = System::Drawing::Point(618, 70);
-			this->button4->Name = L"button4";
-			this->button4->Size = System::Drawing::Size(193, 23);
-			this->button4->TabIndex = 9;
-			this->button4->Text = L"Choose your Havok Animation file";
-			this->button4->UseVisualStyleBackColor = true;
-			this->button4->Visible = false;
+			this->openFolder->Location = System::Drawing::Point(335, 221);
+			this->openFolder->Name = L"openFolder";
+			this->openFolder->Size = System::Drawing::Size(113, 23);
+			this->openFolder->TabIndex = 8;
+			this->openFolder->Text = L"Open in Explorer";
+			this->openFolder->UseVisualStyleBackColor = true;
+			this->openFolder->Click += gcnew System::EventHandler(this, &MyForm::openFolderButton_Click);
 			// 
 			// openFileDialog2
 			// 
@@ -483,28 +376,26 @@ namespace IgzModelConverterGUI
 			this->treeView1->Name = L"treeView1";
 			this->treeView1->Size = System::Drawing::Size(282, 374);
 			this->treeView1->TabIndex = 10;
-			this->treeView1->AfterSelect += gcnew System::Windows::Forms::TreeViewEventHandler(this, &MyForm::TreeView1_AfterSelect);
 			// 
-			// button5
+			// gameFolder
 			// 
-			this->button5->Location = System::Drawing::Point(303, 163);
-			this->button5->Name = L"button5";
-			this->button5->Size = System::Drawing::Size(172, 23);
-			this->button5->TabIndex = 11;
-			this->button5->Text = L"Choose your game folder";
-			this->button5->UseVisualStyleBackColor = true;
-			this->button5->Click += gcnew System::EventHandler(this, &MyForm::Button5_Click);
+			this->gameFolder->Location = System::Drawing::Point(303, 163);
+			this->gameFolder->Name = L"gameFolder";
+			this->gameFolder->Size = System::Drawing::Size(172, 23);
+			this->gameFolder->TabIndex = 11;
+			this->gameFolder->Text = L"Choose your game folder";
+			this->gameFolder->UseVisualStyleBackColor = true;
+			this->gameFolder->Click += gcnew System::EventHandler(this, &MyForm::gameFolderButton_Click);
 			// 
-			// checkBox1
+			// convert
 			// 
-			this->checkBox1->AutoSize = true;
-			this->checkBox1->Location = System::Drawing::Point(499, 167);
-			this->checkBox1->Name = L"checkBox1";
-			this->checkBox1->Size = System::Drawing::Size(68, 17);
-			this->checkBox1->TabIndex = 12;
-			this->checkBox1->Text = L"Skeleton";
-			this->checkBox1->UseVisualStyleBackColor = true;
-			this->checkBox1->CheckedChanged += gcnew System::EventHandler(this, &MyForm::CheckBox1_CheckedChanged);
+			this->convert->Location = System::Drawing::Point(352, 192);
+			this->convert->Name = L"convert";
+			this->convert->Size = System::Drawing::Size(75, 23);
+			this->convert->TabIndex = 13;
+			this->convert->Text = L"Convert";
+			this->convert->UseVisualStyleBackColor = true;
+			this->convert->Click += gcnew System::EventHandler(this, &MyForm::convertButton_Click);
 			// 
 			// MyForm
 			// 
@@ -512,62 +403,21 @@ namespace IgzModelConverterGUI
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"$this.BackgroundImage")));
 			this->ClientSize = System::Drawing::Size(823, 494);
-			this->Controls->Add(this->checkBox1);
-			this->Controls->Add(this->button5);
+			this->Controls->Add(this->convert);
+			this->Controls->Add(this->gameFolder);
 			this->Controls->Add(this->treeView1);
-			this->Controls->Add(this->button4);
-			this->Controls->Add(this->button3);
+			this->Controls->Add(this->openFolder);
 			this->Controls->Add(this->progressBar1);
-			this->Controls->Add(this->button2);
-			this->Controls->Add(this->panel2);
 			this->Controls->Add(this->panel1);
-			this->Controls->Add(this->button1);
 			this->Icon = (cli::safe_cast<System::Drawing::Icon^>(resources->GetObject(L"$this.Icon")));
 			this->Name = L"MyForm";
 			this->Text = L"IgzModelConverterGUI v1.3";
 			this->panel1->ResumeLayout(false);
 			this->panel1->PerformLayout();
-			this->panel2->ResumeLayout(false);
-			this->panel2->PerformLayout();
 			this->ResumeLayout(false);
-			this->PerformLayout();
 
 		}
 #pragma endregion
-	private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) {
-		if (_game == 0 || _type == 0)
-		{
-			MessageBox::Show("Please choose your game and your type", "Error",
-				MessageBoxButtons::OK, MessageBoxIcon::Error);
-			return;
-		}
-		if (_type == 1)
-		{
-			openFileDialog1->FileName = "Select a Igz Model file";
-			openFileDialog1->Filter = "Igz Model file (*.igz)|*.igz";
-			openFileDialog1->Title = "Open Igz Model File";
-			openFileDialog1->Multiselect = false;
-
-			if (openFileDialog1->ShowDialog() == Windows::Forms::DialogResult::OK)
-			{
-				_fileChosen = true;
-				_filename = (char*)(void*)Marshal::StringToHGlobalAnsi(openFileDialog1->FileName);
-			}
-		}
-		else
-		{
-			openFileDialog1->FileName = "Select a Igz Model file";
-			openFileDialog1->Filter = "Igz Model file (*.igz)|*.igz";
-			openFileDialog1->Title = "Open Igz Model File";
-			openFileDialog1->Multiselect = true;
-
-			if (openFileDialog1->ShowDialog() == Windows::Forms::DialogResult::OK)
-			{
-				_fileChosen = true;
-				_filename = (char*)(void*)Marshal::StringToHGlobalAnsi(openFileDialog1->FileName);
-			}
-		}
-	}
 	private: System::Void NSTButton_CheckedChanged(System::Object^  sender, System::EventArgs^  e)
 	{
 		_game = 1;
@@ -576,7 +426,7 @@ namespace IgzModelConverterGUI
 	{
 		_game = 2;
 	}
-	private: System::Void radioButton1_CheckedChanged(System::Object^  sender, System::EventArgs^  e)
+	private: System::Void skylRadioButton_CheckedChanged(System::Object^  sender, System::EventArgs^  e)
 	{
 		_game = 3;
 	}
@@ -589,163 +439,163 @@ namespace IgzModelConverterGUI
 		_type = 2;
 	}
 
-	private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e) 
-	{
-		bool ok = true;
+	private: System::Void openFolderButton_Click(System::Object^ sender, System::EventArgs^ e) {
 		if (!_fileChosen)
 		{
-			MessageBox::Show("Please choose your Igz Model file before converting!", "Error",
+			MessageBox::Show("Please choose your game path folder first!", "Error",
 				MessageBoxButtons::OK, MessageBoxIcon::Error);
 			return;
 		}
-		_files = openFileDialog1->FileNames->Length;
-		for(int i = 0; i < _files;i++)
+		if (_filename[0] == -51)
 		{
-			_filename = (char*)(void*)Marshal::StringToHGlobalAnsi(openFileDialog1->FileNames[i]);
-			ok = ExecuteConvertion();
+			MessageBox::Show("Please choose your Igz Model file first (you need to convert it)!", "Error",
+				MessageBoxButtons::OK, MessageBoxIcon::Error);
+			return;
 		}
-		if (ok == true)
+		std::string filename = _filename;
+		std::string directory;
+		const size_t last_slash_idx = filename.rfind('\\');
+		if (std::string::npos != last_slash_idx)
 		{
-			MessageBox::Show("Finished!", "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
+			directory = filename.substr(0, last_slash_idx);
 		}
+		ShellExecute(NULL, "open", directory.c_str(), NULL, NULL, SW_SHOWMINIMIZED);
+}
+
+	private: System::Void gameFolderButton_Click(System::Object^ sender, System::EventArgs^ e)
+	{
+		if (folderBrowserDialog1->ShowDialog() == Windows::Forms::DialogResult::OK)
+		{
+			_fileChosen = true;
+			_path = (char*)(void*)Marshal::StringToHGlobalAnsi(folderBrowserDialog1->SelectedPath);
+		}
+		System::String^ sFileName = gcnew String(_path);
+		treeView1->CheckBoxes = true;
+		DirectoryInfo^ directoryInfo = gcnew DirectoryInfo(sFileName);
+		BuildTree(directoryInfo, treeView1->Nodes);
+	}
+
+	private: System::Void convertButton_Click(System::Object^ sender, System::EventArgs^ e) {
 		progressBar1->Value = 0;
-	}
-
-private: System::Void sky_CheckedChanged(System::Object^  sender, System::EventArgs^  e) 
-{
-	if (_game == 3)
-	{
-		_type = 2; //Skylanders works with button 2 Model somehow too... 
-	}
-	_type = 3;
-}
-private: System::Void Button3_Click(System::Object^ sender, System::EventArgs^ e) {
-	if (!_fileChosen)
-	{
-		MessageBox::Show("Please choose your game path folder first!", "Error",
-			MessageBoxButtons::OK, MessageBoxIcon::Error);
-		return;
-	}
-	if (_filename[0] == -51)
-	{
-		MessageBox::Show("Please choose your Igz Model file first (you need to convert it)!", "Error",
-			MessageBoxButtons::OK, MessageBoxIcon::Error);
-		return;
-	}
-	std::string filename = _filename;
-	std::string directory;
-	const size_t last_slash_idx = filename.rfind('\\');
-	if (std::string::npos != last_slash_idx)
-	{
-		directory = filename.substr(0, last_slash_idx);
-	}
-	ShellExecute(NULL, "open", directory.c_str(), NULL, NULL, SW_SHOWMINIMIZED);
-}
-
-private: System::Void TreeView1_AfterSelect(System::Object^ sender, System::Windows::Forms::TreeViewEventArgs^ e) 
-{
-	System::String^ test = e->Node->Name;
-	std::string fn = msclr::interop::marshal_as<std::string>(test);
-	if (fn.substr(fn.find_last_of(".") + 1) == "igz")
-	{
-		bool ok = true;
-		if (e->Node->Name->Contains("actors"))
+		System::Collections::IEnumerator^ countEnum = treeView1->Nodes->GetEnumerator();
+		while (countEnum->MoveNext())
 		{
-			if (checkBox1->Checked)
+			GetCountOfCheckedNodes(safe_cast<TreeNode^>(countEnum->Current));
+		}
+		System::Collections::IEnumerator^ checkedEnum = treeView1->Nodes->GetEnumerator();
+		while (checkedEnum->MoveNext())
+		{
+			GetCheckedNodes(safe_cast<TreeNode^>(checkedEnum->Current));
+		}
+		MessageBox::Show(String::Format("{0} Files converted!", _files), "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
+		_files = 0;
+	}
+	private: void GetCheckedNodes(TreeNode^ Node)
+	{
+		if (Node->Checked)
+		{
+			std::string fn = msclr::interop::marshal_as<std::string>(Node->Name);
+			if (fn.substr(fn.find_last_of(".") + 1) == "igz")
 			{
-				_bones = true;
+				bool ok = true;
+				if (Node->Name->Contains("actors"))
+				{
+					_filenamehkx = GetAnimPath(Node->Name);
+					_type = 1;
+				}
+				else if (Node->Name->Contains("models"))
+				{
+					_type = 2;
+				}
+				else if (Node->Name->Contains("sky"))
+				{
+					_type = 3;
+				}
+				else
+				{
+					throw gcnew System::Exception(gcnew System::String("Unknown Type"));
+				}
+				_fileChosen = true;
+				_filename = (char*)(void*)Marshal::StringToHGlobalAnsi(Node->Name);
+				ok = ExecuteConvertion();
+				if (!ok)
+				{
+					throw gcnew System::Exception(gcnew System::String("Some Error occuried..."));
+				}
 			}
-			_filenamehkx = GetAnimPath(e->Node->Name);
-			_type = 1;
 		}
-		else if(e->Node->Name->Contains("models"))
-		{
-			_type = 2;
-		}
-		else if (e->Node->Name->Contains("sky"))
-		{
-			_type = 3;
-		}
-		else
-		{
-			MessageBox::Show("Unknown Type", "Error",
-				MessageBoxButtons::OK, MessageBoxIcon::Error);
-			return;
-		}
-		_files = 1;
-		_fileChosen = true;
-		_filename = (char*)(void*)Marshal::StringToHGlobalAnsi(e->Node->Name);
-		ok = ExecuteConvertion();
-		if (ok == true)
-		{
-			MessageBox::Show("Finished!", "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
-		}
-		progressBar1->Value = 0;
-	}
 
-}
-private: System::Void Button5_Click(System::Object^ sender, System::EventArgs^ e) 
-{
-	if (folderBrowserDialog1->ShowDialog() == Windows::Forms::DialogResult::OK)
+		for each (TreeNode^ subNode in Node->Nodes)
+		{
+			GetCheckedNodes(subNode);
+		}
+	}
+	private: void GetCountOfCheckedNodes(TreeNode^ Node)
 	{
-		_fileChosen = true;
-		_path = (char*)(void*)Marshal::StringToHGlobalAnsi(folderBrowserDialog1->SelectedPath);
-	}
-	System::String^ sFileName = gcnew String(_path);
-	DirectoryInfo^ directoryInfo = gcnew DirectoryInfo(sFileName);
-	BuildTree(directoryInfo, treeView1->Nodes);
-}
-		 void BuildTree(DirectoryInfo^ directoryInfo, TreeNodeCollection^ addInMe)
-		 {
-			 TreeNode^ curNode = addInMe->Add(directoryInfo->Name);
-			 cli::array< DirectoryInfo^ >^ subDir = directoryInfo->GetDirectories();
-			 for (int i = 0; i < subDir->Length; i++)
-			 {
-				 BuildTree(subDir[i], curNode->Nodes);
-			 }
-			 cli::array< FileInfo^ >^ subFiles = directoryInfo->GetFiles();
+		if (Node->Checked)
+		{
+			std::string fn = msclr::interop::marshal_as<std::string>(Node->Name);
+			if (fn != "") //fn is "" if it is a directory
+			{
+				_files++;
+			}
+		}
 
-			 for (int i = 0; i < subFiles->Length; i++)
-			 {
-				 if (subFiles[i]->Extension == gcnew String(".igz"))
-				 {
-					 curNode->Nodes->Add(subFiles[i]->FullName, subFiles[i]->Name);
-				 }
-			 }
-		 }
-		 char* GetAnimPath(System::String^ path)
-		 {
-			 std::string curPath = msclr::interop::marshal_as<std::string>(path);
-			 std::vector<std::string> subdirs;
-			 std::string base_filename;
-			 std::string root;
-			 do
-			 {
-				 root = curPath.substr(0, curPath.find_last_of("/\\"));
-				 base_filename = curPath.substr(curPath.find_last_of("/\\") + 1);
-				 if (base_filename == "actors")
-				 {
-					 break;
-				 }
-				 subdirs.push_back(base_filename);
-				 curPath = curPath.substr(0, curPath.find_last_of("/\\"));
-			 } while (base_filename != "actors");
-			 std::string hkxPath = root;
-			 hkxPath.append("\\anims");
-			 std::reverse(subdirs.begin(), subdirs.end());
-			 for (size_t i = 0; i < subdirs.size(); i++)
-			 {
-				 hkxPath.append("\\" + subdirs[i]);
-			 }
-			 std::string::size_type i = hkxPath.rfind('.', hkxPath.length());
-			 std::string newExt = "hka";
-			 if (i != std::string::npos) {
-				 hkxPath.replace(i + 1, newExt.length(), newExt);
-			 }
-			 System::String^ test2 = gcnew String(hkxPath.c_str());
-			 return (char*)(void*)Marshal::StringToHGlobalAnsi(test2);
-		 }
-private: System::Void CheckBox1_CheckedChanged(System::Object^ sender, System::EventArgs^ e) {
-}
+		for each (TreeNode^ subNode in Node->Nodes)
+		{
+			GetCountOfCheckedNodes(subNode);
+		}
+	}
+	private: void BuildTree(DirectoryInfo^ directoryInfo, TreeNodeCollection^ addInMe)
+	{
+		TreeNode^ curNode = addInMe->Add(directoryInfo->Name);
+		cli::array< DirectoryInfo^ >^ subDir = directoryInfo->GetDirectories();
+		for (int i = 0; i < subDir->Length; i++)
+		{
+			BuildTree(subDir[i], curNode->Nodes);
+		}
+		cli::array< FileInfo^ >^ subFiles = directoryInfo->GetFiles();
+
+		for (int i = 0; i < subFiles->Length; i++)
+		{
+			if (subFiles[i]->Extension == gcnew String(".igz"))
+			{
+				curNode->Nodes->Add(subFiles[i]->FullName, subFiles[i]->Name);
+			}
+		}
+	}
+	private: char* GetAnimPath(System::String^ path)
+	{
+		std::string curPath = msclr::interop::marshal_as<std::string>(path);
+		std::vector<std::string> subdirs;
+		std::string base_filename;
+		std::string root;
+		do
+		{
+			root = curPath.substr(0, curPath.find_last_of("/\\"));
+			base_filename = curPath.substr(curPath.find_last_of("/\\") + 1);
+			if (base_filename == "actors")
+			{
+				break;
+			}
+			subdirs.push_back(base_filename);
+			curPath = curPath.substr(0, curPath.find_last_of("/\\"));
+		} while (base_filename != "actors");
+		std::string hkxPath = root;
+		hkxPath.append("\\anims");
+		std::reverse(subdirs.begin(), subdirs.end());
+		for (size_t i = 0; i < subdirs.size(); i++)
+		{
+			hkxPath.append("\\" + subdirs[i]);
+		}
+		std::string::size_type i = hkxPath.rfind('.', hkxPath.length());
+		std::string newExt = "hka";
+		if (i != std::string::npos) {
+			hkxPath.replace(i + 1, newExt.length(), newExt);
+		}
+		System::String^ test2 = gcnew String(hkxPath.c_str());
+		return (char*)(void*)Marshal::StringToHGlobalAnsi(test2);
+	}
+
 };
 }
