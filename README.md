@@ -13,7 +13,7 @@ Converts Igz Model Files from the Alchemy Engine to Fbx. Supports Crash Bandicoo
 | TODO                    |                    |
 |-------------------------|--------------------|
 | Basic Mesh              | :heavy_check_mark: |
-| Multiple File Selection | :x:                |
+| Multiple File Selection | :heavy_check_mark: |
 | Skeleton                | :x:                |
 | Texture Applying        | :x:                |
 
