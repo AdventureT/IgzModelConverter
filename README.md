@@ -24,4 +24,4 @@ Converts Igz Model Files from the VV Alchemy Engine to Fbx. Supports Crash Bandi
 You can open the folder where your igz file is located by pressing "Open in Explorer" (a new explorer window will open)
 
 ## Installation
-Install FBX SDK from https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2019-0 and HavokLib from https://github.com/PredatorCZ/HavokLib on your Computer and include it in the properties
+Download the project and open .sln with vs2017/19
