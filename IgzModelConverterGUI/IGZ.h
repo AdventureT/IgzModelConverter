@@ -3,12 +3,12 @@
 #include <stdlib.h>
 #include <iostream>
 #include <fbxsdk.h>
-#include <filesystem>
+//#include <filesystem>
 #include "umHalf.h"
 #include "windows.h"
 #include <vcclr.h>
 #include <shellapi.h>
-#include <HavokApi.hpp> //For skeleton and animation
+//#include <HavokApi.hpp> //For skeleton and animation
 #include <msclr\marshal_cppstd.h>
 //#include "EulerAngels.h"
 //#include "MathHelper.h"
@@ -19,15 +19,12 @@ namespace IGZ
 	using namespace System;
 	using namespace System::ComponentModel;
 	using namespace System::Collections;
-	using namespace System::Windows::Forms;
-	using namespace System::Data;
-	using namespace System::Drawing;
 	using namespace System::Runtime::InteropServices;
-	using namespace System::Collections;
 	using namespace System::Collections::Generic;
 	using namespace std;
 	using namespace System::IO;
-	namespace fs = std::experimental::filesystem;
+
+	//namespace fs = std::experimental::filesystem;
 	using namespace msclr::interop;
 	class IGZ : Reader
 	{
@@ -37,6 +34,7 @@ namespace IGZ
 		long igzVersion = 0;
 		long* dataOffset = new long[4];
 		long* dataCount = new long[4];
+		long* dataSize = new long[4];
 		long long subDataOffset = 0;
 		long meshDataOffset = 0;
 		long long boneDataOffset = 0;
@@ -101,18 +99,134 @@ namespace IGZ
 		std::vector<std::string> tstrNameArray;
 		std::vector<std::string> boneNames;
 		std::vector<long> boneParents;
-		std::vector<FbxMatrix> matrices;
+		std::vector<FbxAMatrix> matrices;
 
 		enum game IGZgame;
 		enum type IGZtype;
 
 		bool _bones = false;
-		hkaSkeleton* m_skeleton;
+		//hkaSkeleton* m_skeleton;
 
 		TCHAR  dir[1024] = { 0 };
 	public:
-		IGZ(int game, int type, char* fileName); //Constructor
+		enum Endian
+		{
+			LITTLE,
+			BIG
+		};
+		Endian endian;
+		IGZ::IGZ::Endian getEndian();
+		IGZ(int game, int type, char* fileName, Endian e); //Constructor
 	protected:
+
+		struct TSTR
+		{
+			long count;
+			long size;
+			long start;
+			vector<std::string> text;
+		};
+
+		struct TMET
+		{
+			long count;
+			long size;
+			long start;
+			vector<std::string> text;
+		};
+
+		struct MTSZ
+		{
+			long count;
+			long size;
+			long start;
+			vector<long> unknown;
+		};
+
+		struct EXID
+		{
+			long count;
+			long size;
+			long start;
+			vector<long long> idenifier;
+		};
+
+		struct ROFS
+		{
+			long count;
+			long size;
+			long start;
+			//vector<byte> unknown; //Isn't right
+		};
+
+		struct REXT
+		{
+			long count;
+			long size;
+			long start;
+			vector<long> unknown;
+		};
+
+		struct ROOT
+		{
+			long count;
+			long size;
+			long start;
+			vector<long> unknown;
+		};
+
+		struct RVTB
+		{
+			long count;
+			long size;
+			long start;
+			//vector<byte> unknown; //Seems to be not going for bytes though
+		};
+
+		struct RSTT
+		{
+			long count;
+			long size;
+			long start;
+			//vector<byte> unknown; //Seems to be not going for bytes though
+		};
+
+		struct RPID
+		{
+			long count;
+			long size;
+			long start;
+		};
+
+		struct RHND
+		{
+			long count;
+			long size;
+			long start;
+			vector<long> unknown;
+		};
+
+		struct ONAM
+		{
+			long count;
+			long size;
+			long start;
+			vector<long> unknown;
+		};
+		FbxScene* lScene;
+		TSTR tstr;
+		TMET tmet;
+		MTSZ mtsz;
+		EXID exid;
+		ROFS rofs;
+		REXT rext;
+		ROOT root;
+		ONAM onam;
+		RVTB rvtb;
+		RHND rhnd;
+		RPID rpid;
+		RSTT rstt;
+
 		void storeGameAndType(int gameNumber, int typeNumber);
 		void storeBoneData();
 		void skipToMeshTableOffset();
@@ -122,6 +236,9 @@ namespace IGZ
 		void FbxOutput();
 		char* GetAnimPath(System::String^ path);
 		int getDir(TCHAR* fullPath, TCHAR* dir);
-	};
-
+		void ReadTSTR();
+		void ReadTDEP();
+		//FbxNode* addHavokBone(FbxNode* parent_node, unsigned int parent_index, vector<FbxNode*>& skeleton_bones, const hkaSkeleton* skeleton);
+		//FbxNode* addHavokSkeleton(vector<FbxNode*>& skeleton_bones, const hkaSkeleton* skeleton);
+};
 }

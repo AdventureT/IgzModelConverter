@@ -1,6 +1,7 @@
-#pragma once
+﻿#pragma once
 #include "MathHelper.h"
 #include "IGZ.h"
+#include "IGZTEX.h"
 
 namespace IgzModelConverterGUI 
 {
@@ -15,7 +16,7 @@ namespace IgzModelConverterGUI
 	using namespace System::Collections::Generic;
 	using namespace System::IO;
 	using namespace msclr::interop;
-
+	/*
 	//Some unused Skeleton stuff from the hka's
 	struct BoneInfo
 	{
@@ -55,10 +56,10 @@ namespace IgzModelConverterGUI
 
 		return angles;
 	}
-	hkaSkeleton* m_skeleton;
+	//hkaSkeleton* m_skeleton;
 	std::vector<FbxMatrix> matrices;
 
-
+	*/
 	// Utility to make sure we always return the right index for the given node
 	// Very handy for skeleton hierachy work in the FBX SDK
 	FbxNode* GetNodeIndexByName(FbxScene* pScene, std::string NodeName)
@@ -96,6 +97,7 @@ namespace IgzModelConverterGUI
 
 		return NodeNumber;
 	}
+	/*
 	FbxNode* CreateSkeleton(FbxScene* pScene, const char* pName)
 	{
 		// get number of bones and apply reference pose
@@ -159,8 +161,10 @@ namespace IgzModelConverterGUI
 
 		return pScene->GetRootNode();
 	}
+	*/
 	//Wanted to make a file which holds the paths of each game. This would be more easier than selecting each time you start the program the game paths manual.
 	//Might add this to the todo list...
+	/*
 	void WritePathFile(char* nstGamePath, char* ctrGamePath, char* skyGamePath)
 	{
 		FILE* f;
@@ -178,7 +182,7 @@ namespace IgzModelConverterGUI
 		fgets(nstGamePath, sizeof(nstGamePath), f);
 		return true;
 	}
-
+	*/
 	/// <summary>
 	/// Summary for MyForm
 	/// </summary>
@@ -197,6 +201,7 @@ namespace IgzModelConverterGUI
 			 char* _filenamehkx = new char[256];
 
 			 char* _path = new char[256];
+			 char* _pathTex = new char[256];
 	private: System::Windows::Forms::Button^ openFolder;
 
 
@@ -208,6 +213,11 @@ namespace IgzModelConverterGUI
 			bool busy = false;
 			 int _files = 0;
 	private: System::Windows::Forms::Button^ convert;
+	private: System::Windows::Forms::Button^ button1;
+	private: System::Windows::Forms::OpenFileDialog^ openFileDialog3;
+	private: System::Windows::Forms::RadioButton^ radioButton1;
+	private: System::Windows::Forms::RadioButton^ radioButton2;
+	private: System::Windows::Forms::RadioButton^ radioButton3;
 		   //char* nstGamePath;
 			 //char* ctrGamePath;
 
@@ -236,7 +246,19 @@ namespace IgzModelConverterGUI
 		{
 			try
 			{
-				IGZ::IGZ igZ(_game, _type, _filename);
+				if (radioButton1->Checked)
+				{
+					IGZ::IGZ igZ(_game, _type, _filename, IGZ::IGZ::LITTLE);
+				}
+				else if (radioButton2->Checked)
+				{
+					IGZ::IGZ igZ(_game, _type, _filename, IGZ::IGZ::BIG);
+				}
+				else
+				{
+					IGZ::IGZ igZ(_game, _type, _filename, IGZ::IGZ::LITTLE);
+				}
+
 			}
 			catch (System::Exception^ ex)
 			{
@@ -281,6 +303,7 @@ namespace IgzModelConverterGUI
 			this->NSTButton = (gcnew System::Windows::Forms::RadioButton());
 			this->CTRButton = (gcnew System::Windows::Forms::RadioButton());
 			this->panel1 = (gcnew System::Windows::Forms::Panel());
+			this->radioButton3 = (gcnew System::Windows::Forms::RadioButton());
 			this->skyl = (gcnew System::Windows::Forms::RadioButton());
 			this->progressBar1 = (gcnew System::Windows::Forms::ProgressBar());
 			this->openFolder = (gcnew System::Windows::Forms::Button());
@@ -289,6 +312,10 @@ namespace IgzModelConverterGUI
 			this->gameFolder = (gcnew System::Windows::Forms::Button());
 			this->folderBrowserDialog1 = (gcnew System::Windows::Forms::FolderBrowserDialog());
 			this->convert = (gcnew System::Windows::Forms::Button());
+			this->button1 = (gcnew System::Windows::Forms::Button());
+			this->openFileDialog3 = (gcnew System::Windows::Forms::OpenFileDialog());
+			this->radioButton1 = (gcnew System::Windows::Forms::RadioButton());
+			this->radioButton2 = (gcnew System::Windows::Forms::RadioButton());
 			this->panel1->SuspendLayout();
 			this->SuspendLayout();
 			// 
@@ -327,13 +354,27 @@ namespace IgzModelConverterGUI
 			// panel1
 			// 
 			this->panel1->BackColor = System::Drawing::Color::Transparent;
+			this->panel1->Controls->Add(this->radioButton3);
 			this->panel1->Controls->Add(this->skyl);
 			this->panel1->Controls->Add(this->NSTButton);
 			this->panel1->Controls->Add(this->CTRButton);
 			this->panel1->Location = System::Drawing::Point(15, 27);
 			this->panel1->Name = L"panel1";
-			this->panel1->Size = System::Drawing::Size(205, 26);
+			this->panel1->Size = System::Drawing::Size(282, 23);
 			this->panel1->TabIndex = 5;
+			// 
+			// radioButton3
+			// 
+			this->radioButton3->AutoSize = true;
+			this->radioButton3->Location = System::Drawing::Point(210, 4);
+			this->radioButton3->Name = L"radioButton3";
+			this->radioButton3->Size = System::Drawing::Size(82, 17);
+			this->radioButton3->TabIndex = 6;
+			this->radioButton3->TabStop = true;
+			this->radioButton3->Text = L"Swap Force";
+			this->radioButton3->UseVisualStyleBackColor = true;
+			this->radioButton3->Visible = false;
+			this->radioButton3->CheckedChanged += gcnew System::EventHandler(this, &MyForm::radioButton3_CheckedChanged);
 			// 
 			// skyl
 			// 
@@ -397,12 +438,53 @@ namespace IgzModelConverterGUI
 			this->convert->UseVisualStyleBackColor = true;
 			this->convert->Click += gcnew System::EventHandler(this, &MyForm::convertButton_Click);
 			// 
+			// button1
+			// 
+			this->button1->Location = System::Drawing::Point(614, 163);
+			this->button1->Name = L"button1";
+			this->button1->Size = System::Drawing::Size(178, 23);
+			this->button1->TabIndex = 14;
+			this->button1->Text = L"Convert Textures to DDS/GNF";
+			this->button1->UseVisualStyleBackColor = true;
+			this->button1->Click += gcnew System::EventHandler(this, &MyForm::button1_Click);
+			// 
+			// openFileDialog3
+			// 
+			this->openFileDialog3->FileName = L"openFileDialog3";
+			// 
+			// radioButton1
+			// 
+			this->radioButton1->AutoSize = true;
+			this->radioButton1->Location = System::Drawing::Point(614, 279);
+			this->radioButton1->Name = L"radioButton1";
+			this->radioButton1->Size = System::Drawing::Size(152, 17);
+			this->radioButton1->TabIndex = 15;
+			this->radioButton1->TabStop = true;
+			this->radioButton1->Text = L"Little Endian (PC,SWITCH)";
+			this->radioButton1->UseVisualStyleBackColor = true;
+			this->radioButton1->Visible = false;
+			// 
+			// radioButton2
+			// 
+			this->radioButton2->AutoSize = true;
+			this->radioButton2->Location = System::Drawing::Point(614, 303);
+			this->radioButton2->Name = L"radioButton2";
+			this->radioButton2->Size = System::Drawing::Size(76, 17);
+			this->radioButton2->TabIndex = 16;
+			this->radioButton2->TabStop = true;
+			this->radioButton2->Text = L"Big Endian";
+			this->radioButton2->UseVisualStyleBackColor = true;
+			this->radioButton2->Visible = false;
+			// 
 			// MyForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"$this.BackgroundImage")));
 			this->ClientSize = System::Drawing::Size(823, 494);
+			this->Controls->Add(this->radioButton2);
+			this->Controls->Add(this->radioButton1);
+			this->Controls->Add(this->button1);
 			this->Controls->Add(this->convert);
 			this->Controls->Add(this->gameFolder);
 			this->Controls->Add(this->treeView1);
@@ -411,10 +493,11 @@ namespace IgzModelConverterGUI
 			this->Controls->Add(this->panel1);
 			this->Icon = (cli::safe_cast<System::Drawing::Icon^>(resources->GetObject(L"$this.Icon")));
 			this->Name = L"MyForm";
-			this->Text = L"IgzModelConverterGUI v1.3";
+			this->Text = L"IgzModelConverterGUI v1.3.5";
 			this->panel1->ResumeLayout(false);
 			this->panel1->PerformLayout();
 			this->ResumeLayout(false);
+			this->PerformLayout();
 
 		}
 #pragma endregion
@@ -513,7 +596,9 @@ namespace IgzModelConverterGUI
 				}
 				else
 				{
-					throw gcnew System::Exception(gcnew System::String("Unknown Type"));
+					//_filenamehkx = GetAnimPath(Node->Name);
+					_type = 1;
+					//throw gcnew System::Exception(gcnew System::String("Unknown Type"));
 				}
 				_fileChosen = true;
 				_filename = (char*)(void*)Marshal::StringToHGlobalAnsi(Node->Name);
@@ -596,6 +681,49 @@ namespace IgzModelConverterGUI
 		System::String^ test2 = gcnew String(hkxPath.c_str());
 		return (char*)(void*)Marshal::StringToHGlobalAnsi(test2);
 	}
+		   private: char* GetTexPath(System::String^ path)
+		   {
+			   std::string curPath = msclr::interop::marshal_as<std::string>(path);
+			   std::vector<std::string> subdirs;
+			   std::string base_filename;
+			   std::string root;
+			   do
+			   {
+				   root = curPath.substr(0, curPath.find_last_of("/\\"));
+				   base_filename = curPath.substr(curPath.find_last_of("/\\") + 1);
+				   if (base_filename == "actors" || base_filename == "models" || base_filename == "sky")
+				   {
+					   break;
+				   }
+				   subdirs.push_back(base_filename);
+				   curPath = curPath.substr(0, curPath.find_last_of("/\\"));
+			   } while (base_filename != "actors" || base_filename != "models" || base_filename != "sky");
+			   std::string texPath = root;
+			   texPath.append("\\textures");
+			   std::reverse(subdirs.begin(), subdirs.end());
+			   for (size_t i = 0; i < subdirs.size(); i++)
+			   {
+				   texPath.append("\\" + subdirs[i]);
+			   }
+			   std::string::size_type i = texPath.rfind('.', texPath.length());
+			   std::string newExt = "igz";
+			   if (i != std::string::npos) {
+				   texPath.replace(i + 1, newExt.length(), newExt);
+			   }
+			   System::String^ test2 = gcnew String(texPath.c_str());
+			   return (char*)(void*)Marshal::StringToHGlobalAnsi(test2);
+		   }
 
+private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e) {
+	if (openFileDialog3->ShowDialog() == Windows::Forms::DialogResult::OK)
+	{
+		_fileChosen = true;
+		_pathTex = (char*)(void*)Marshal::StringToHGlobalAnsi(openFileDialog3->FileName);
+		IGZTEX::IGZTEX tex(_pathTex,0);
+	}
+}
+private: System::Void radioButton3_CheckedChanged(System::Object^ sender, System::EventArgs^ e) {
+	_game = 4;
+}
 };
 }

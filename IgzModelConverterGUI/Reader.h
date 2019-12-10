@@ -1,28 +1,33 @@
 #pragma once
 #include <stdio.h>
 #include "umHalf.h"
-
-class Reader
-{
+#include <string>
+#include <stdlib.h>
+	class Reader
+	{
 	public:
-		int ReadByte(FILE* f);
+		char ReadByte(FILE* f,int e);
 
-		int ReadUByte(FILE* f);
+		unsigned char ReadUByte(FILE* f, int e);
 
-		short ReadShort(FILE* f);
+		short ReadShort(FILE* f, int e);
 
-		unsigned short ReadUShort(FILE* f);
+		unsigned short ReadUShort(FILE* f, int e);
 
-		half ReadHalfFloat(FILE* f);
+		half ReadHalfFloat(FILE* f, int e);
 
-		float ReadFloat(FILE* f);
+		float ReadFloat(FILE* f, int e);
 
-		long ReadLong(FILE* f);
+		long ReadLong(FILE* f, int e);
 
-		unsigned long ReadULong(FILE* f);
+		unsigned long ReadULong(FILE* f, int e);
 
-		long long ReadLongLong(FILE* f);
+		long long ReadLongLong(FILE* f, int e);
 
-		unsigned long long ReadULongLong(FILE* f);
-};
+		unsigned long long ReadULongLong(FILE* f, int e);
 
+		std::string ReadString(FILE* f);
+
+		std::string ReadString(FILE* f, int chars);
+
+	};

@@ -4,7 +4,8 @@ namespace IGZ {
 	{
 		NST,
 		CTR,
-		SKYLANDERS
+		SKYLANDERS,
+		SWAPFORCE
 	};
 
 	enum type
@@ -14,8 +15,14 @@ namespace IGZ {
 		SKY
 	};
 
-	IGZ::IGZ(int gameNumber, int typeNumber, char* filename)
+	IGZ::IGZ::Endian IGZ::getEndian()
 	{
+		return endian;
+	}
+
+	IGZ::IGZ(int gameNumber, int typeNumber, char* filename,Endian e)
+	{
+		endian = e;
 		fileName = filename;
 		storeGameAndType(gameNumber, typeNumber);
 		readHeader();
@@ -39,6 +46,9 @@ namespace IGZ {
 		case 3:
 			IGZgame = SKYLANDERS;
 			break;
+		case 4:
+			IGZgame = SWAPFORCE;
+			break;
 		default:
 			throw gcnew System::Exception(gcnew System::String("Unknown Game"));
 		}
@@ -57,71 +67,107 @@ namespace IGZ {
 			throw gcnew System::Exception(gcnew System::String("Unknown Type"));
 		}
 	}
+
+	void IGZ::ReadTSTR()
+	{
+		long tstr = ReadLong(f,endian);
+		long count = ReadLong(f, endian);
+		long size = ReadLong(f, endian);
+		long unknown = ReadLong(f, endian);
+		for (int i = 0; i < count; i++)
+		{
+			std::string part1 = ReadString(f);
+			tstrNameArray.push_back(part1);
+			char c;
+			fread_s(&c, 1, 1, 1, f);
+			if (c != '\0')
+			{
+				fseek(f, -1, SEEK_CUR);
+			}
+		}
+	}
+
+	void IGZ::ReadTDEP()
+	{
+		fseek(f, dataOffset[0], SEEK_SET);
+		long tdep = ReadLong(f, endian);
+		long count = ReadLong(f, endian);
+		long size = ReadLong(f, endian);
+		long unknown = ReadLong(f, endian);
+		for (int i = 0; i < count; i++)
+		{
+			std::string part1 = ReadString(f);
+			std::string part2 = ReadString(f);
+			fseek(f, 1, SEEK_CUR);
+		}
+	}
 	
 	void IGZ::storeBoneData()
 	{
+		ReadTDEP();
+		ReadTSTR();
 		if (IGZtype == ACTOR)
 		{
 			fseek(f, 32 + dataOffset[1], SEEK_SET);
-			subDataOffset = ReadLongLong(f) + dataOffset[1];
+			subDataOffset = ReadLongLong(f, endian) + dataOffset[1];
 			_fseeki64(f, subDataOffset, SEEK_SET);
-			long InfoOffset = ReadLong(f) + dataOffset[1]; //8864
+			long InfoOffset = ReadLong(f, endian) + dataOffset[1]; //8864
 			fseek(f, 4, SEEK_CUR);
-			long ModelInfoOffset = ReadLong(f) + dataOffset[1]; //9296
+			long ModelInfoOffset = ReadLong(f, endian) + dataOffset[1]; //9296
 			fseek(f, 4, SEEK_CUR);
 			fseek(f, ModelInfoOffset, SEEK_SET);
 			fseek(f, 40, SEEK_CUR);
 
-			boneDataOffset = ReadLongLong(f) + dataOffset[1];
-			long modelDataOffset = ReadLong(f) + dataOffset[1];
+			boneDataOffset = ReadLongLong(f, endian) + dataOffset[1];
+			long modelDataOffset = ReadLong(f, endian) + dataOffset[1];
 			fseek(f, 4, SEEK_CUR);
-			long UnknownOffset2 = ReadLong(f) + dataOffset[1]; //108704
+			long UnknownOffset2 = ReadLong(f, endian) + dataOffset[1]; //108704
 			fseek(f, 4, SEEK_CUR);
-			if (ReadLong(f) != 0)
+			if (ReadLong(f, endian) != 0)
 			{
 				throw gcnew System::Exception(gcnew System::String("The IGZ has the type model not actor!"));
 			}
 			fseek(f, 4, SEEK_CUR);
-			float BoundMinX = ReadFloat(f); //-67,74
-			float BoundMinY = ReadFloat(f); //-167,33
-			float BoundMinZ = ReadFloat(f); //-77,25
-			float BoundMaxX = ReadFloat(f); //85,40
+			float BoundMinX = ReadFloat(f, endian); //-67,74
+			float BoundMinY = ReadFloat(f, endian); //-167,33
+			float BoundMinZ = ReadFloat(f, endian); //-77,25
+			float BoundMaxX = ReadFloat(f, endian); //85,40
 
-			float BoundMaxY = ReadFloat(f); //167,33
-			float BoundMaxZ = ReadFloat(f); //230,58
+			float BoundMaxY = ReadFloat(f, endian); //167,33
+			float BoundMaxZ = ReadFloat(f, endian); //230,58
 
 			fseek(f, 32, SEEK_CUR);
 
-			long BoneMatrixSize = ReadLong(f); //12160
+			long BoneMatrixSize = ReadLong(f, endian); //12160
 			fseek(f, 4, SEEK_CUR);
 
-			long BoneMatrixStart = ReadLong(f) + dataOffset[1]; //20184
+			long BoneMatrixStart = ReadLong(f, endian) + dataOffset[1]; //20184
 			fseek(f, 20, SEEK_CUR);
 
-			long BoneCount = ReadLong(f); //191
+			long BoneCount = ReadLong(f, endian); //191
 			fseek(f, 4, SEEK_CUR);
 
-			long BoneHeaderSize = ReadLong(f); //1528
+			long BoneHeaderSize = ReadLong(f, endian); //1528
 			fseek(f, 4, SEEK_CUR);
-			long BoneHeaderStart = ReadLong(f) + dataOffset[1]; //9480
+			long BoneHeaderStart = ReadLong(f, endian) + dataOffset[1]; //9480
 
 			fseek(f, BoneHeaderStart, SEEK_SET);
 
 			for (int i = 0; i < BoneCount; i++)
 			{
-				long BoneOffset = ReadLong(f) + dataOffset[1]; //11008
+				long BoneOffset = ReadLong(f, endian) + dataOffset[1]; //11008
 				fseek(f, 4, SEEK_CUR);
 				long BoneRet = ftell(f); //9488
 				fseek(f, BoneOffset, SEEK_SET);
 				fseek(f, 16, SEEK_CUR);
-				long BoneNameID = ReadLong(f); //20
+				long BoneNameID = ReadLong(f, endian); //20
 				std::string BoneName = tstrNameArray[BoneNameID];
 				fseek(f, 4, SEEK_CUR);
-				long BoneParent = ReadLong(f);
-				long BoneNum = ReadLong(f);
-				float BoneTX = ReadFloat(f);
-				float BoneTY = ReadFloat(f);
-				float BoneTZ = ReadFloat(f);
+				long BoneParent = ReadLong(f, endian);
+				long BoneNum = ReadLong(f, endian);
+				float BoneTX = ReadFloat(f, endian);
+				float BoneTY = ReadFloat(f, endian);
+				float BoneTZ = ReadFloat(f, endian);
 				fseek(f, 4, SEEK_CUR);
 				boneNames.push_back(BoneName);
 				boneParents.push_back(BoneParent);
@@ -143,21 +189,20 @@ namespace IGZ {
 				}
 				else
 				{
-					m11 = ReadFloat(f); m12 = ReadFloat(f); m13 = ReadFloat(f); m14 = ReadFloat(f);
-					m21 = ReadFloat(f); m22 = ReadFloat(f); m23 = ReadFloat(f); m24 = ReadFloat(f);
-					m31 = ReadFloat(f); m32 = ReadFloat(f); m33 = ReadFloat(f); m34 = ReadFloat(f);
-					m41 = ReadFloat(f); m42 = ReadFloat(f); m43 = ReadFloat(f); m44 = ReadFloat(f);
+					m11 = ReadFloat(f, endian); m12 = ReadFloat(f, endian); m13 = ReadFloat(f, endian); m14 = ReadFloat(f, endian);
+					m21 = ReadFloat(f, endian); m22 = ReadFloat(f, endian); m23 = ReadFloat(f, endian); m24 = ReadFloat(f, endian);
+					m31 = ReadFloat(f, endian); m32 = ReadFloat(f, endian); m33 = ReadFloat(f, endian); m34 = ReadFloat(f, endian);
+					m41 = ReadFloat(f, endian); m42 = ReadFloat(f, endian); m43 = ReadFloat(f, endian); m44 = ReadFloat(f, endian);
 				}
-				FbxVector4 m1 = FbxVector4(m11, m12, m13, m14);
-				FbxVector4 m2 = FbxVector4(m21, m22, m23, m24);
-				FbxVector4 m3 = FbxVector4(m31, m32, m33, m34);
+				FbxVector4 m1 = FbxVector4(m11, m12, m13);
+				FbxVector4 m2 = FbxVector4(m21, m22, m23);
+				FbxVector4 m3 = FbxVector4(m31, m32, m33);
 				FbxVector4 m4 = FbxVector4(m41, m42, m43, m44);
-				FbxMatrix tfm;
+				FbxAMatrix tfm;
 				tfm.SetRow(0, m1);
-				tfm.SetRow(1, m1);
-				tfm.SetRow(2, m1);
-				tfm.SetRow(3, m1);
-				tfm.Inverse();
+				tfm.SetRow(1, m2);
+				tfm.SetRow(2, m3);
+				tfm.SetRow(3, m4);
 				matrices.push_back(tfm);
 			}
 
@@ -168,7 +213,7 @@ namespace IGZ {
 	{
 		fseek(f, dataOffset[1], SEEK_SET);
 		fseek(f, 32, SEEK_CUR);
-		meshDataOffset = ReadLong(f) + dataOffset[1];
+		meshDataOffset = ReadLong(f, endian) + dataOffset[1];
 		fseek(f, meshDataOffset, SEEK_SET);
 
 		int marker = 0;
@@ -178,19 +223,42 @@ namespace IGZ {
 
 		int start = 0;
 		int fin = 0;
-
-		if (IGZgame == SKYLANDERS)
+		if (IGZgame == SWAPFORCE)
+		{
+			do
+			{
+				Umarker = ReadULong(f, endian);
+			} while (Umarker != 0xFFFFFFFF);
+			start = ftell(f);
+			do
+			{
+				marker2 = ReadLong(f, endian);
+			} while (marker2 != 904786743);
+			fin = ftell(f);
+			fseek(f, meshDataOffset, SEEK_SET);
+			do
+			{
+				do
+				{
+					Umarker = ReadUShort(f, endian);
+				} while (Umarker != 32768);
+				fseek(f, 2, SEEK_CUR);
+				marker = ReadLong(f, endian) + dataOffset[1];
+			} while (marker <= start || marker >= fin);
+			fseek(f, -4, SEEK_CUR);
+		}
+		else if (IGZgame == SKYLANDERS) //is there really no other way then this brainfuck?
 		{
 			if (IGZtype == ACTOR)
 			{
 				do
 				{
-					Umarker = ReadULong(f);
+					Umarker = ReadULong(f, endian);
 				} while (Umarker != 0xFFFFFFFF);
 				start = ftell(f);
 				do
 				{
-					marker2 = ReadLong(f);
+					marker2 = ReadLong(f, endian);
 				} while (marker2 != 904786743);
 				fin = ftell(f);
 				fseek(f, meshDataOffset, SEEK_SET);
@@ -198,9 +266,9 @@ namespace IGZ {
 				{
 					do
 					{
-						Umarker = ReadUShort(f);
+						Umarker = ReadUShort(f, endian);
 					} while (Umarker != 34816);
-					marker = ReadLong(f) + dataOffset[1];
+					marker = ReadLong(f, endian) + dataOffset[1];
 				} while (marker <= start || marker >= fin);
 				fseek(f, -4, SEEK_CUR);
 			}
@@ -208,24 +276,24 @@ namespace IGZ {
 			{
 				do
 				{
-					marker = ReadShort(f);
+					marker = ReadShort(f, endian);
 				} while (marker == 0);
 				do
 				{
-					marker = ReadUShort(f);
+					marker = ReadUShort(f, endian);
 				} while (marker != 34816);
 				fseek(f, 4, SEEK_CUR);
-				marker = ReadShort(f);
+				marker = ReadShort(f, endian);
 				if (marker != 34816)
 				{
 					fseek(f, 40, SEEK_CUR);
-					marker = ReadShort(f);
+					marker = ReadShort(f, endian);
 					if (marker != 34816)
 					{
 						fseek(f, -48, SEEK_CUR);
 					}
 					fseek(f, 14, SEEK_CUR);
-					marker = ReadShort(f);
+					marker = ReadShort(f, endian);
 					if (marker != 34816)
 					{
 						fseek(f, -16, SEEK_CUR);
@@ -240,12 +308,12 @@ namespace IGZ {
 			{
 				do
 				{
-					Umarker = ReadULong(f);
+					Umarker = ReadULong(f, endian);
 				} while (Umarker != 0xFFFFFFFF);
 				start = ftell(f);
 				do
 				{
-					marker2 = ReadLong(f);
+					marker2 = ReadLong(f, endian);
 				} while (marker2 != 904786743);
 				fin = ftell(f);
 				fseek(f, meshDataOffset, SEEK_SET);
@@ -253,9 +321,9 @@ namespace IGZ {
 				{
 					do
 					{
-						Umarker = ReadUShort(f);
+						Umarker = ReadUShort(f, endian);
 					} while (Umarker != 272);
-					marker = ReadLong(f) + dataOffset[1];
+					marker = ReadLong(f, endian) + dataOffset[1];
 				} while (marker <= start || marker >= fin);
 				fseek(f, -4, SEEK_CUR);
 			}
@@ -263,24 +331,24 @@ namespace IGZ {
 			{
 				do
 				{
-					marker = ReadShort(f);
+					marker = ReadShort(f, endian);
 				} while (marker == 0);
 				do
 				{
-					marker = ReadShort(f);
+					marker = ReadShort(f, endian);
 				} while (marker != 272);
 				fseek(f, 4, SEEK_CUR);
-				marker = ReadShort(f);
+				marker = ReadShort(f, endian);
 				if (marker != 272)
 				{
 					fseek(f, 40, SEEK_CUR);
-					marker = ReadShort(f);
+					marker = ReadShort(f, endian);
 					if (marker != 272)
 					{
 						fseek(f, -48, SEEK_CUR);
 					}
 					fseek(f, 14, SEEK_CUR);
-					marker = ReadShort(f);
+					marker = ReadShort(f, endian);
 					if (marker != 272)
 					{
 						fseek(f, -16, SEEK_CUR);
@@ -297,26 +365,27 @@ namespace IGZ {
 			throw gcnew System::Exception(gcnew System::String("Can't open the igz file"));
 		}
 		fseek(f, 4, SEEK_CUR);
-		igzVersion = ReadLong(f);
+		igzVersion = ReadLong(f, endian);
 		fseek(f, 8, SEEK_CUR);
 		for (int i = 0; i < 4; i++)
 		{
-			dataCount[i] = ReadLong(f);
+			dataCount[i] = ReadLong(f, endian);
 			fseek(f, 4, SEEK_CUR);
-			dataOffset[i] = ReadLong(f);
-			fseek(f, 4, SEEK_CUR);
+			dataOffset[i] = ReadLong(f, endian);
+			dataSize[i] = ReadLong(f, endian);
 		}
 	}
 
+
 	void IGZ::readMeshOffsets()
 	{
-		meshTableOffset = ReadLongLong(f) + dataOffset[1];
-		meshCount = ReadLong(f);
+		meshTableOffset = ReadLongLong(f, endian) + dataOffset[1];
+		meshCount = ReadLong(f, endian);
 		_fseeki64(f, meshTableOffset, SEEK_SET);
 		long long* meshDataOffsetArr = new long long[(int)meshCount];
 		for (int i = 0; i < meshCount; i++)
 		{
-			meshDataOffsetArr[i] = ReadLongLong(f) + dataOffset[1];
+			meshDataOffsetArr[i] = ReadLongLong(f, endian) + dataOffset[1];
 		}
 
 		pChar = strrchr(fileName, 92);
@@ -327,12 +396,12 @@ namespace IGZ {
 			pChar++;	// Skip the last backslash
 		char* lFilename = new char[256];
 		char* exportPath = (fileName);
-		getDir(exportPath, dir);
+		getDir((TCHAR*)exportPath, dir);
 		strncpy_s(MeshName, 256, pChar, strlen(pChar) - 4);
 		strncpy_s(lFilename, 256, pChar, strlen(pChar) - 4);
 		strcat_s(lFilename, 256, ".fbx");
 		strcat_s(MeshName, 256, ".obj");
-		strcat_s(dir, 256, lFilename);
+		strcat_s((char*)dir, 256, lFilename);
 
 		verticesCount = new int[(int)meshCount];
 		faceIndicesCount = new int[(int)meshCount];
@@ -349,60 +418,60 @@ namespace IGZ {
 				_fseeki64(f, meshDataOffsetArr[n], SEEK_SET);
 
 				fseek(f, 0x48, SEEK_CUR);
-				vertDataOffset = ReadLongLong(f) + dataOffset[1];
-				faceDataOffset = ReadLongLong(f) + dataOffset[1];
+				vertDataOffset = ReadLongLong(f, endian) + dataOffset[1];
+				faceDataOffset = ReadLongLong(f, endian) + dataOffset[1];
 				_fseeki64(f, vertDataOffset, SEEK_SET);
 				fseek(f, 0x20, SEEK_CUR); //always 0x20
 				switch (IGZtype)
 				{
 				case SKY:
-					subDataOffset = (ReadULongLong(f) - 0x8000000) + dataOffset[2];
+					subDataOffset = (ReadULongLong(f, endian) - 0x8000000) + dataOffset[2];
 					_fseeki64(f, subDataOffset, SEEK_SET);
 					fseek(f, 16, SEEK_CUR);
-					vertCount = ReadLong(f);
+					vertCount = ReadLong(f, endian);
 					verticesCount[n] = vertCount;
 					fseek(f, 28, SEEK_CUR);
-					vertOffset = ReadShort(f) + dataOffset[3];
+					vertOffset = ReadShort(f, endian) + dataOffset[3];
 					fseek(f, 6, SEEK_CUR);
-					subVertDataOffset3 = (ReadULongLong(f) - 0x8000000) + dataOffset[2];
+					subVertDataOffset3 = (ReadULongLong(f, endian) - 0x8000000) + dataOffset[2];
 					_fseeki64(f, subVertDataOffset3, SEEK_SET);
 					fseek(f, 16, SEEK_CUR);
-					vertexStride = ReadLong(f);
+					vertexStride = ReadLong(f, endian);
 					_fseeki64(f, faceDataOffset, SEEK_SET);
 					fseek(f, 0x20, SEEK_CUR);
-					subFaceDataOffset = (ReadULongLong(f) - 0x8000000) + dataOffset[2];
+					subFaceDataOffset = (ReadULongLong(f, endian) - 0x8000000) + dataOffset[2];
 					_fseeki64(f, subFaceDataOffset, SEEK_SET);
 					fseek(f, 16, SEEK_CUR);
-					faceCount = ReadLong(f);
+					faceCount = ReadLong(f, endian);
 					faceIndicesCount[n] = faceCount;
 					fseek(f, 28, SEEK_CUR);
-					faceOffset = ReadShort(f) + dataOffset[3];
+					faceOffset = ReadShort(f, endian) + dataOffset[3];
 					fseek(f, 6, SEEK_CUR);
-					faceSize = ReadLong(f);
+					faceSize = ReadLong(f, endian);
 					_fseeki64(f, vertOffset, SEEK_SET);
 					readMeshData(n);
 					break;
 				default:
-					subVertDataOffset = ReadLongLong(f) + dataOffset[1];
+					subVertDataOffset = ReadLongLong(f, endian) + dataOffset[1];
 					_fseeki64(f, subVertDataOffset, SEEK_SET);
 					fseek(f, 16, SEEK_CUR);
-					vertCount = ReadLong(f);
+					vertCount = ReadLong(f, endian);
 					verticesCount[n] = vertCount;
 					fseek(f, 28, SEEK_CUR);
-					vertOffset = (ReadULongLong(f) - 0x8000000) + dataOffset[2];
-					subVertDataOffset3 = ReadULongLong(f) + dataOffset[1];
+					vertOffset = (ReadULongLong(f, endian) - 0x8000000) + dataOffset[2];
+					subVertDataOffset3 = ReadULongLong(f, endian) + dataOffset[1];
 					_fseeki64(f, subVertDataOffset3, SEEK_SET);
 					fseek(f, 16, SEEK_CUR);
-					vertexStride = ReadLong(f);
+					vertexStride = ReadLong(f, endian);
 					_fseeki64(f, faceDataOffset, SEEK_SET);
 					fseek(f, 0x20, SEEK_CUR);
-					subFaceDataOffset = ReadLongLong(f) + dataOffset[1];
+					subFaceDataOffset = ReadLongLong(f, endian) + dataOffset[1];
 					_fseeki64(f, subFaceDataOffset, SEEK_SET);
 					fseek(f, 16, SEEK_CUR);
-					faceCount = ReadLong(f);
+					faceCount = ReadLong(f, endian);
 					faceIndicesCount[n] = faceCount;
 					fseek(f, 28, SEEK_CUR);
-					faceOffset = (ReadULongLong(f) - 0x8000000) + dataOffset[2];
+					faceOffset = (ReadULongLong(f, endian) - 0x8000000) + dataOffset[2];
 					_fseeki64(f, vertOffset, SEEK_SET);
 					readMeshData(n);
 					break;
@@ -415,68 +484,69 @@ namespace IGZ {
 				_fseeki64(f, meshDataOffsetArr[n], SEEK_SET);
 
 				fseek(f, 0x48, SEEK_CUR);
-				vertDataOffset = ReadLongLong(f) + dataOffset[1];
-				faceDataOffset = ReadLongLong(f) + dataOffset[1];
+				vertDataOffset = ReadLongLong(f, endian) + dataOffset[1];
+				faceDataOffset = ReadLongLong(f, endian) + dataOffset[1];
 				_fseeki64(f, vertDataOffset, SEEK_SET);
 				fseek(f, 0x20, SEEK_CUR); //always 0x20
 				switch (IGZtype)
 				{
 				case SKY:
-					subDataOffset = (ReadULongLong(f) - 0x8000000) + dataOffset[2];
+					subDataOffset = (ReadULongLong(f, endian) - 0x8000000) + dataOffset[2];
 					_fseeki64(f, subDataOffset, SEEK_SET);
 					fseek(f, 12, SEEK_CUR);
-					vertCount = ReadLong(f);
+					vertCount = ReadLong(f, endian);
 					verticesCount[n] = vertCount;
 					fseek(f, 24, SEEK_CUR);
-					vertOffset = ReadShort(f) + dataOffset[3];
+					vertOffset = ReadShort(f, endian) + dataOffset[3];
 					fseek(f, 6, SEEK_CUR);
-					subVertDataOffset3 = (ReadULongLong(f) - 0x8000000) + dataOffset[2];
+					subVertDataOffset3 = (ReadULongLong(f, endian) - 0x8000000) + dataOffset[2];
 					_fseeki64(f, subVertDataOffset3, SEEK_SET);
 					fseek(f, 12, SEEK_CUR);
-					vertexStride = ReadLong(f);
+					vertexStride = ReadLong(f, endian);
 					_fseeki64(f, faceDataOffset, SEEK_SET);
 					fseek(f, 0x20, SEEK_CUR);
-					subFaceDataOffset = (ReadULongLong(f) - 0x8000000) + dataOffset[2];
+					subFaceDataOffset = (ReadULongLong(f, endian) - 0x8000000) + dataOffset[2];
 					_fseeki64(f, subFaceDataOffset, SEEK_SET);
 					fseek(f, 12, SEEK_CUR);
-					faceCount = ReadLong(f);
+					faceCount = ReadLong(f, endian);
 					faceIndicesCount[n] = faceCount;
 					fseek(f, 24, SEEK_CUR);
-					if (ReadULongLong(f) >= 0x10000000) //This fixes T255_Skybox_Boreal
+					if (ReadULongLong(f, endian) >= 0x10000000) //This fixes T255_Skybox_Boreal
 					{
 						fseek(f, -8, SEEK_CUR);
-						faceOffset = (ReadULongLong(f) - 0x10000000) + dataOffset[3];
+						faceOffset = (ReadULongLong(f, endian) - 0x10000000) + dataOffset[3];
 					}
 					else
 					{
-						faceOffset = ReadShort(f) + dataOffset[3];
+						faceOffset = ReadShort(f, endian) + dataOffset[3];
 					}
 					fseek(f, 6, SEEK_CUR);
-					faceSize = ReadLong(f);
+					faceSize = ReadLong(f, endian);
 					_fseeki64(f, vertOffset, SEEK_SET);
 					readMeshData(n);
 					break;
 				default:
-					subDataOffset = ReadLongLong(f) + dataOffset[1];
+					subDataOffset = ReadLongLong(f, endian) + dataOffset[1];
 					_fseeki64(f, subDataOffset, SEEK_SET);
 					fseek(f, 12, SEEK_CUR);
-					vertCount = ReadLong(f);
+					vertCount = ReadLong(f, endian);
 					verticesCount[n] = vertCount;
 					fseek(f, 24, SEEK_CUR);
-					vertOffset = (ReadULongLong(f) - 0x8000000) + dataOffset[2];
-					subVertDataOffset3 = ReadULongLong(f) + dataOffset[1];
+					vertOffset = (ReadULongLong(f, endian) - 0x8000000) + dataOffset[2];
+					subVertDataOffset3 = ReadULongLong(f, endian) + dataOffset[1];
 					_fseeki64(f, subVertDataOffset3, SEEK_SET);
 					fseek(f, 12, SEEK_CUR);
-					vertexStride = ReadLong(f);
+					vertexStride = ReadLong(f, endian);
 					_fseeki64(f, faceDataOffset, SEEK_SET);
 					fseek(f, 0x20, SEEK_CUR);
-					subFaceDataOffset = ReadLongLong(f) + dataOffset[1];
+					subFaceDataOffset = ReadLongLong(f, endian) + dataOffset[1];
 					_fseeki64(f, subFaceDataOffset, SEEK_SET);
 					fseek(f, 12, SEEK_CUR);
-					faceCount = ReadLong(f);
+					faceCount = ReadLong(f, endian);
 					faceIndicesCount[n] = faceCount;
 					fseek(f, 24, SEEK_CUR);
-					faceOffset = (ReadULongLong(f) - 0x8000000) + dataOffset[2];
+					faceOffset = (ReadULongLong(f, endian) - 0x8000000) + dataOffset[2];
+					faceSize = ReadLong(f, endian);
 					_fseeki64(f, vertOffset, SEEK_SET);
 					readMeshData(n);
 					break;
@@ -497,21 +567,21 @@ namespace IGZ {
 				_fseeki64(f, meshDataOffsetArr[n], SEEK_SET);
 
 				fseek(f, 0x48, SEEK_CUR);
-				vertDataOffset = ReadLongLong(f) + dataOffset[1];
-				faceDataOffset = ReadLongLong(f) + dataOffset[1];
+				vertDataOffset = ReadLongLong(f, endian) + dataOffset[1];
+				faceDataOffset = ReadLongLong(f, endian) + dataOffset[1];
 				_fseeki64(f, vertDataOffset, SEEK_SET);
 				fseek(f, 0x20, SEEK_CUR); //always 0x20
 
-				subDataOffset = (ReadULongLong(f) - 0x8000000) + dataOffset[2];
+				subDataOffset = (ReadULongLong(f, endian) - 0x8000000) + dataOffset[2];
 				_fseeki64(f, subDataOffset, SEEK_SET);
 				fseek(f, 12, SEEK_CUR);
-				vertCount = ReadLong(f);
+				vertCount = ReadLong(f, endian);
 				verticesCount[n] = vertCount;
 				fseek(f, 24, SEEK_CUR);
-				subVertDataOffset3 = (ReadULongLong(f) - 0x8000000) + dataOffset[2];
+				subVertDataOffset3 = (ReadULongLong(f, endian) - 0x8000000) + dataOffset[2];
 				_fseeki64(f, subVertDataOffset3, SEEK_SET);
 				fseek(f, 12, SEEK_CUR);
-				vertexStride = ReadLong(f);
+				vertexStride = ReadLong(f, endian);
 				if (allVertFaceBlocks == 0)
 				{
 					vertOffset = dataOffset[3];
@@ -539,8 +609,8 @@ namespace IGZ {
 						fseek(f, vertBlockLength, SEEK_CUR);
 						do
 						{
-							faceCheck1 = ReadShort(f);
-							faceCheck2 = ReadShort(f);
+							faceCheck1 = ReadShort(f, endian);
+							faceCheck2 = ReadShort(f, endian);
 							if (faceCheck1 == 0 && faceCheck2 == 1) //Unsafe
 							{
 								_break = true;
@@ -558,11 +628,11 @@ namespace IGZ {
 				}
 				_fseeki64(f, faceDataOffset, SEEK_SET);
 				fseek(f, 0x20, SEEK_CUR);
-				subFaceDataOffset = (ReadULongLong(f) - 0x8000000) + dataOffset[2];
+				subFaceDataOffset = (ReadULongLong(f, endian) - 0x8000000) + dataOffset[2];
 				_fseeki64(f, subFaceDataOffset, SEEK_SET);
 				fseek(f, 8, SEEK_CUR);
-				faceSize = ReadLong(f);
-				faceCount = ReadLong(f);
+				faceSize = ReadLong(f, endian);
+				faceCount = ReadLong(f, endian);
 				faceIndicesCount[n] = faceCount;
 				faceOffset = (allVertFaceBlocks + dataOffset[3]) + seekForward;
 				faceBlockLength = faceCount * 2;
@@ -583,11 +653,11 @@ namespace IGZ {
 			noNormals[n] = true;
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 
 				vertices.push_back(vertexX * fscale);
 				vertices.push_back(vertexY * fscale);
@@ -602,12 +672,12 @@ namespace IGZ {
 			noNormals[n] = true;
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
 				fseek(f, 4, SEEK_CUR);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 
 				vertices.push_back(vertexX * fscale);
 				vertices.push_back(vertexY * fscale);
@@ -622,11 +692,11 @@ namespace IGZ {
 			noNormals[n] = true;
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 8, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -641,14 +711,14 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 4, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -666,14 +736,14 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 8, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -691,14 +761,14 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 12, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -716,15 +786,15 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
 				fseek(f, 4, SEEK_CUR);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 12, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -734,7 +804,7 @@ namespace IGZ {
 				normals.push_back(normalY);
 				normals.push_back(normalZ);
 				uvs.push_back(uvU);
-				uvs.push_back(1 - uvV);
+				uvs.push_back(1-uvV);
 			}
 			break;
 		}
@@ -742,14 +812,14 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 20, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -767,15 +837,15 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
 				fseek(f, 4, SEEK_CUR);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 20, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -793,14 +863,14 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 
 				vertices.push_back(vertexX * fscale);
 				vertices.push_back(vertexY * fscale);
@@ -818,14 +888,14 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 32, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -843,15 +913,15 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
 				fseek(f, 4, SEEK_CUR);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 32, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -869,14 +939,14 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 40, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -894,14 +964,14 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 44, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -919,15 +989,15 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
 				fseek(f, 4, SEEK_CUR);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 44, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -945,14 +1015,14 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 52, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -970,15 +1040,15 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
 				fseek(f, 4, SEEK_CUR);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 52, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -996,14 +1066,14 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 64, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -1021,15 +1091,15 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
 				fseek(f, 4, SEEK_CUR);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 64, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -1047,14 +1117,14 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 108, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -1072,15 +1142,15 @@ namespace IGZ {
 		{
 			for (int i = 0; i < vertCount; i++)
 			{
-				vertexX = ReadFloat(f);
-				vertexY = ReadFloat(f);
-				vertexZ = ReadFloat(f);
-				normalX = ReadFloat(f);
-				normalY = ReadFloat(f);
-				normalZ = ReadFloat(f);
+				vertexX = ReadFloat(f, endian);
+				vertexY = ReadFloat(f, endian);
+				vertexZ = ReadFloat(f, endian);
+				normalX = ReadFloat(f, endian);
+				normalY = ReadFloat(f, endian);
+				normalZ = ReadFloat(f, endian);
 				fseek(f, 4, SEEK_CUR);
-				uvU = ReadHalfFloat(f);
-				uvV = ReadHalfFloat(f);
+				uvU = ReadHalfFloat(f, endian);
+				uvV = ReadHalfFloat(f, endian);
 				fseek(f, 108, SEEK_CUR);
 
 				vertices.push_back(vertexX * fscale);
@@ -1109,9 +1179,9 @@ namespace IGZ {
 		{
 			for (int i = 0; i < (faceCount / 3); i++)
 			{
-				faceA = ReadUShort(f);
-				faceB = ReadUShort(f);
-				faceC = ReadUShort(f);
+				faceA = ReadUShort(f, endian);
+				faceB = ReadUShort(f, endian);
+				faceC = ReadUShort(f, endian);
 
 				faces.push_back(faceA);
 				faces.push_back(faceB);
@@ -1122,18 +1192,62 @@ namespace IGZ {
 		{
 			for (int i = 0; i < (faceCount / 3); i++)
 			{
-				faceA = ReadULong(f);
-				faceB = ReadULong(f);
-				faceC = ReadULong(f);
+				faceA = ReadULong(f, endian);
+				faceB = ReadULong(f, endian);
+				faceC = ReadULong(f, endian);
 
 				faces.push_back(faceA);
 				faces.push_back(faceB);
 				faces.push_back(faceC);
 			}
-			ftell(f);
+			//ftell(f);
 		}
 	}
+	/*
+	FbxNode* IGZ::addHavokBone(FbxNode* parent_node, unsigned int parent_index, vector<FbxNode*>& skeleton_bones, const hkaSkeleton* skeleton) {
+		FbxNode* root_bone = NULL;
+		for (int b = 0; b < skeleton->GetNumBones(); b++) {
+			hkFullBone bone = skeleton->GetFullBone(b);
+			string bone_name = bone.name;
+			size_t model_bone_index = 0;
+			bool found = false;
 
+			if (skeleton->GetBoneParentID(b) != parent_index) {
+				continue;
+			}
+
+			FbxSkeleton* lSkeletonRootAttribute = FbxSkeleton::Create(lScene, bone_name.c_str());
+			if (parent_index == -1) lSkeletonRootAttribute->SetSkeletonType(FbxSkeleton::eRoot);
+			else lSkeletonRootAttribute->SetSkeletonType(FbxSkeleton::eLimbNode);
+
+			FbxNode* bone_node = FbxNode::Create(lScene, bone_name.c_str());
+			bone_node->SetNodeAttribute(lSkeletonRootAttribute);
+			root_bone = bone_node;
+
+			const hkQTransform* ref = skeleton->GetBoneTM(b);
+			bone_node->LclTranslation.Set(FbxVector4(ref->position.X,ref->position.Y, ref->position.Z, ref->position.W));
+			bone_node->LclScaling.Set(FbxVector4(ref->scale.X, ref->scale.Y, ref->scale.Z,ref->scale.W));
+			FbxQuaternion lcl_quat(ref->rotation.X, ref->rotation.Y, ref->rotation.Z, ref->rotation.W);
+			FbxVector4 lcl_rotation;
+			lcl_rotation.SetXYZ(lcl_quat);
+			bone_node->LclRotation.Set(lcl_rotation);
+
+			skeleton_bones[b] = bone_node;
+			parent_node->AddChild(bone_node);
+
+			addHavokBone(bone_node, b, skeleton_bones, skeleton);
+		}
+		return root_bone;
+	}
+
+
+	// Create a skeleton with 2 segments.
+	FbxNode* IGZ::addHavokSkeleton(vector<FbxNode*>& skeleton_bones, const hkaSkeleton* skeleton) {
+		FbxNode* lRootNode = lScene->GetRootNode();
+		FbxNode* skeleton_root_bone = addHavokBone(lRootNode, -1, skeleton_bones, skeleton);
+		return skeleton_root_bone;
+	}
+	*/
 	void IGZ::FbxOutput()
 	{
 		if (meshCount == 0)
@@ -1141,7 +1255,7 @@ namespace IGZ {
 			throw gcnew System::Exception(gcnew System::String("The Igz doesn't contain any mesh data"));
 		}
 		FbxManager* lSdkManager = FbxManager::Create();
-		FbxScene* lScene = FbxScene::Create(lSdkManager, "myScene");
+		lScene = FbxScene::Create(lSdkManager, "myScene");
 		FbxIOSettings* ios = FbxIOSettings::Create(lSdkManager, IOSROOT);
 		//FbxNode* lSkeletonRoot = FbxNode::Create(lScene, "Root");
 		/*
@@ -1158,47 +1272,141 @@ namespace IGZ {
 		int rememberI = 0;
 		int remeberU = 0;
 		int Niord = 0;
-		if (IGZtype == ACTOR && _bones == true)
+		/*
+		FbxNode* lRootNode = lScene->GetRootNode();
+		FbxSkeleton* skelf = FbxSkeleton::Create(lScene, "test");
+		vector<FbxNode*> skeleton_bones;
+		const char* hkafilapath = GetAnimPath(gcnew String(fileName));
+		IhkPackFile* hdr = IhkPackFile::Create(hkafilapath);
+		if (!hdr)
 		{
-			IhkPackFile* hdr = IhkPackFile::Create(GetAnimPath(gcnew String(fileName)));
-			if (!hdr)
-			{
-				throw gcnew System::Exception(gcnew System::String("Can't open the hkx file"));
-			}
-			hkRootLevelContainer* rcont = hdr->GetRootLevelContainer();
+			throw gcnew System::Exception(gcnew System::String("Can't open the hkx file"));
+		}
+		hkRootLevelContainer* rcont = hdr->GetRootLevelContainer();
 
-			if (!rcont)
-			{
-				throw gcnew System::Exception(gcnew System::String("hkRootLevelContainer is null or empty"));
-			}
+		if (!rcont)
+		{
+			throw gcnew System::Exception(gcnew System::String("hkRootLevelContainer is null or empty"));
+		}
 
-			const hkaAnimationContainer* aniCont = rcont->GetVariant(0);
-			const hkaAnimation* anim = aniCont->GetAnimation(0);
-			for (int cAnnot = 0; cAnnot < anim->GetNumAnnotations(); cAnnot++)
+		const hkaAnimationContainer* aniCont = rcont->GetVariant(0);
+		const hkaAnimation* anim = aniCont->GetAnimation(0);
+		for (int cAnnot = 0; cAnnot < anim->GetNumAnnotations(); cAnnot++)
+		{
+			boneNames.push_back(anim->GetAnnotation(cAnnot).get()->GetName());
+		}
+		const hkaSkeleton* skel = aniCont->GetSkeleton(1);
+		skeleton_bones.resize(skel->GetNumBones(), NULL);
+		addHavokSkeleton(skeleton_bones, skel);
+		*/
+		/*
+		FbxNode* lSkeletonRoot = FbxNode::Create(lScene, "Root");
+		FbxSkeleton* skel = FbxSkeleton::Create(lScene, "test");
+		for (int i = 0; i < boneNames.size(); i++)
+		{
+			if (boneParents[i] == -1) skel->SetSkeletonType(FbxSkeleton::eRoot);
+			else skel->SetSkeletonType(FbxSkeleton::eLimbNode);
+			std::string bName = boneNames[i].c_str();
+			FbxNode* node = FbxNode::Create(lScene, boneNames[i].c_str());
+			node->LclTranslation.Set(matrices[i].GetT());
+			lRootNode->AddChild(node);
+		}
+		*/
+		/*
+		FbxNode* lSkeletonRoot = FbxNode::Create(lScene, "Root");
+		FbxSkeleton* skel = FbxSkeleton::Create(lScene, "test");
+		vector<FbxNode*> fbxNodes;
+		for (int i = 0; i < boneNames.size(); i++)
+		{
+			std::string bName = boneNames[i].c_str();
+			FbxNode* node = FbxNode::Create(lScene, boneNames[i].c_str());
+			bool found = false;
+			for (int j = 0; j < fbxNodes.size(); j++)
 			{
-				boneNames.push_back(anim->GetAnnotation(cAnnot).get()->GetName());
-			}
-			std::string s;
-			int i = 0;
-			for (std::string& piece : boneNames)
-			{
-				if (i == 9)
+				if (!fbxNodes[j])
 				{
-					s += "\n";
+					found = false;
+					break;
+				}
+				std::string name = fbxNodes[j]->GetName();
+				if (name == bName)
+				{
+					node = fbxNodes[j];
+					found = true;
+				}
+			}
+			if (!found)
+			{
+				node = FbxNode::Create(lScene, bName.c_str());
+			}
+
+				FbxAMatrix nodeTM = {};
+				FbxAMatrix nodeTM2 = {};
+				FbxAMatrix rot = {};
+				rot.SetRow(0, matrices[i].GetRow(0));
+				rot.SetRow(1, matrices[i].GetRow(1));
+				rot.SetRow(2, matrices[i].GetRow(2));
+				//FbxQuaternion quat(matrices[i].GetRow(3)[0], matrices[i].GetRow(3)[1], matrices[i].GetRow(3)[2]);
+				//quat.Conjugate();
+				//nodeTM.SetR(quat.DecomposeSphericalXYZ());
+				nodeTM.SetT(FbxVector4(matrices[i].GetRow(3)[0] * matrices[i].GetRow(0), matrices[i].GetRow(3)[1], matrices[i].GetRow(3)[2]));
+				if (boneParents[i] > -1)
+				{
+					nodeTM2 = {};
+					fbxNodes[boneParents[i]]->AddChild(node);
+					nodeTM2.SetT(fbxNodes[boneParents[i]]->LclTranslation.Get());
+					//nodeTM2.SetR(fbxNodes[boneParents[i]]->LclRotation.Get());
+					nodeTM *= nodeTM2;
 				}
 				else
-				{
-					s += piece + "\t";
-				}
-				i++;
-			}
-			/*
-			m_skeleton = (hkaSkeleton*)aniCont->GetSkeleton(1);
-			lSkeletonRoot = CreateSkeleton(lScene, "Skeleton");
-			lSkeletonRoot->PreRotation.Set(FbxVector4(-90, -90, 0));
-			lRootNode->AddChild(lSkeletonRoot);
-			*/
+					nodeTM *= lRootNode->EvaluateLocalTransform();
+				//node->LclRotation.Set(nodeTM.GetR());
+				node->LclTranslation.Set(nodeTM.GetT());
+				fbxNodes.push_back(node);
 		}
+		lRootNode->AddChild(fbxNodes[0]);
+		*/
+		//if (IGZtype == ACTOR && _bones == true)
+		//{
+		//	IhkPackFile* hdr = IhkPackFile::Create(GetAnimPath(gcnew String(fileName)));
+		//	if (!hdr)
+		//	{
+		//		throw gcnew System::Exception(gcnew System::String("Can't open the hkx file"));
+		//	}
+		//	hkRootLevelContainer* rcont = hdr->GetRootLevelContainer();
+
+		//	if (!rcont)
+		//	{
+		//		throw gcnew System::Exception(gcnew System::String("hkRootLevelContainer is null or empty"));
+		//	}
+
+		//	const hkaAnimationContainer* aniCont = rcont->GetVariant(0);
+		//	const hkaAnimation* anim = aniCont->GetAnimation(0);
+		//	for (int cAnnot = 0; cAnnot < anim->GetNumAnnotations(); cAnnot++)
+		//	{
+		//		boneNames.push_back(anim->GetAnnotation(cAnnot).get()->GetName());
+		//	}
+		//	std::string s;
+		//	int i = 0;
+		//	for (std::string& piece : boneNames)
+		//	{
+		//		if (i == 9)
+		//		{
+		//			s += "\n";
+		//		}
+		//		else
+		//		{
+		//			s += piece + "\t";
+		//		}
+		//		i++;
+		//	}
+		//	/*
+		//	m_skeleton = (hkaSkeleton*)aniCont->GetSkeleton(1);
+		//	lSkeletonRoot = CreateSkeleton(lScene, "Skeleton");
+		//	lSkeletonRoot->PreRotation.Set(FbxVector4(-90, -90, 0));
+		//	lRootNode->AddChild(lSkeletonRoot);
+		//	*/
+		//}
 		// Build the node tree.
 		/*
 		int currentBone = 0;
@@ -1350,7 +1558,7 @@ namespace IGZ {
 
 		}
 		FbxExporter* lExporter = FbxExporter::Create(lSdkManager, "");
-		bool lExportStatus = lExporter->Initialize(dir, -1, lSdkManager->GetIOSettings());
+		bool lExportStatus = lExporter->Initialize((const char*)dir, -1, lSdkManager->GetIOSettings());
 		if (!lExportStatus) {
 			throw gcnew System::Exception(gcnew System::String("Call to FbxExporter::Initialize() failed."));
 		}
@@ -1366,7 +1574,7 @@ namespace IGZ {
 		int buffCounter = 0;
 		int dirSymbolCounter = 0;
 
-		for (unsigned int i = 0; i < strlen(fullPath); i++) {
+		for (unsigned int i = 0; i < strlen((const char*)fullPath); i++) {
 			if (fullPath[i] != L'\\') {
 				if (buffCounter < buffSize) buff[buffCounter++] = fullPath[i];
 				else return -1;

@@ -46,7 +46,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CLRSupport>true</CLRSupport>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -74,17 +74,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
-    <LibraryPath>C:\Program Files\Autodesk\FBX\FBX SDK\2019.5\lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
-    <IncludePath>C:\Program Files\Autodesk\FBX\FBX SDK\2019.5\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)</IncludePath>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <LibraryPath>C:\Program Files\Autodesk\FBX\FBX SDK\2019.5\lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
-    <IncludePath>C:\Program Files\Autodesk\FBX\FBX SDK\2019.5\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -95,25 +91,29 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;K_FBXSDK;K_PLUGIN</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\Leon\Desktop\HavokLib-master\HavokLib-master\3rd_party\PreCore;C:\Users\Leon\Desktop\HavokLib-master\HavokLib-master\include;F:\Glew and Glut\glew-1.11.0\include;F:\Glew and Glut\freeglut\include;C:\Program Files\Autodesk\FBX\FBX SDK\2019.5\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>HavokLib.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;freeglut.lib;glew32.lib</AdditionalDependencies>
+      <AdditionalDependencies>HavokLib.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <EntryPointSymbol>Main</EntryPointSymbol>
-      <AdditionalLibraryDirectories>C:\Users\Leon\Desktop\HavokLib-master\HavokLib-master\lib\Win32_Debug;F:\Glew and Glut\glew-1.11.0\lib;F:\Glew and Glut\freeglut\lib;C:\Program Files\Autodesk\FBX\FBX SDK\2019.5\lib\vs2017\x86\debug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./lib/vs2017/x86/debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;K_FBXSDK;K_PLUGIN%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies />
+      <AdditionalDependencies>HavokLib.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./lib/vs2017/x64/debug</AdditionalLibraryDirectories>
+      <SubSystem>Windows</SubSystem>
+      <EntryPointSymbol>Main</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -121,24 +121,28 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;K_FBXSDK;K_PLUGIN</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>F:\Glew and Glut\glew-1.11.0\include;F:\Glew and Glut\freeglut\include;C:\Program Files\Autodesk\FBX\FBX SDK\2019.5\include</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <AdditionalIncludeDirectories>./include</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;freeglut.lib;glew32.lib</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <EntryPointSymbol>Main</EntryPointSymbol>
-      <AdditionalLibraryDirectories>F:\Glew and Glut\glew-1.11.0\lib;F:\Glew and Glut\freeglut\lib;C:\Program Files\Autodesk\FBX\FBX SDK\2019.5\lib\vs2017\x86\debug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./lib/vs2017/x86/release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies />
+      <AdditionalDependencies>HavokLib.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./lib/vs2017/x64/release</AdditionalLibraryDirectories>
+      <SubSystem>Windows</SubSystem>
+      <EntryPointSymbol>Main</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -150,12 +154,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="IGZ.cpp" />
+    <ClCompile Include="IGZTEX.cpp" />
     <ClCompile Include="MyForm.cpp" />
     <ClCompile Include="Reader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EulerAngels.h" />
     <ClInclude Include="IGZ.h" />
+    <ClInclude Include="IGZTEX.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="MyForm.h">
       <FileType>CppForm</FileType>
@@ -169,9 +175,6 @@
     <EmbeddedResource Include="MyForm.resx">
       <DependentUpon>MyForm.h</DependentUpon>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="umHalf.inl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="IgzModelConverterGUI.rc" />
