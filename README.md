@@ -1,4 +1,5 @@
-# IgzModelConverter
+# THIS PROJECT IS NO LONGER CONTINUED and a new one is in the works: [igModelConverter](https://github.com/AdventureT/igModelConverter)
+
 Converts Igz Model Files from the VV Alchemy Engine to Fbx. Supports Crash Bandicoot™ N. Sane Trilogy, Ctr™ Nitro-Fueled, Skylanders Imaginators.
 
 ## Compatible Games
